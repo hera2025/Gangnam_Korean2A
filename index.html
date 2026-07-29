@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>도란도란 강남한국어 - 서울대 한국어+ 2A 통합 형성평가</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        naver: {
+                            DEFAULT: '#03C75A',
+                            hover: '#02b351',
+                            light: '#E6F7ED',
+                            dark: '#028a3e',
+                            bg: '#F4F9F5'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans KR', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- React & ReactDOM CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Babel Compiler -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #F8FAFC;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #F1F5F9;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        /* STREAMING_CHUNK:Initializing Application State and Datasets... */
+        const { useState, useEffect, useMemo } = React;
+
+        // ==========================================
+        // 1과~9과 데이터셋 정의
+        // ==========================================
+        const unit1Questions = [
+            { id: 1, category: "어휘", question: "다음 설명에 해당하는 개인 정보 어휘로 가장 알맞은 것을 고르십시오.", passage: "전화번호나 이메일 주소처럼 서로 연락을 주고받을 수 있는 정보를 의미합니다.", options: ["성명", "국적", "연락처", "생년월일"], answer: 2, hint: "'연락'할 수 있는 정보 항목입니다.", explanation: "전화번호, 이메일 주소 등 연락이 가능한 정보를 '연락처'라고 합니다." },
+            { id: 2, category: "어휘", question: "다음 빈칸에 들어갈 개인 정보 항목 이름으로 알맞은 것을 고르십시오.", passage: "가: (      )(이/가) 어떻게 되세요?\n나: 2000년 1월 31일이에요.", options: ["생년월일", "성별", "국적", "성명"], answer: 0, hint: "태어난 날짜를 뜻합니다.", explanation: "태어난 해, 월, 일을 묻는 항목은 '생년월일'입니다." },
+            { id: 3, category: "문법", question: "다음 대화의 빈칸에 들어갈 알맞은 이름 소개 표현을 고르십시오.", passage: "가: 자기소개를 해 보세요.\n나: 안녕하세요? 저는 받침이 있는 이름 '닛쿤'(      ).", options: ["이라고 합니다", "라고 합니다", "인데", "입니다만"], answer: 0, hint: "받침이 있는 명사 뒤 표현입니다.", explanation: "'닛쿤'은 받침이 있으므로 '이라고 합니다'가 결합합니다." },
+            { id: 4, category: "문법", question: "다음 대화의 빈칸에 들어갈 알맞은 목적 표현 형태를 고르십시오.", passage: "가: 도서관에는 왜 가요?\n나: 한국어 책을 (      ) 도서관에 가요.", options: ["읽으려고", "읽으러면", "읽으면서", "읽자마자"], answer: 0, hint: "의도/목적 표현 '-(으)려고'입니다.", explanation: "'읽다' 받침 O -> '읽으려고'가 됩니다." },
+            { id: 5, category: "문법", question: "다음 두 문장을 '명사 + 인데'를 사용하여 한 문장으로 바르게 연결한 것을 고르십시오.", passage: "보기: [ 이것은 참외입니다 + 여름에 먹는 과일입니다 ]", options: ["이것은 참외인데 여름에 먹는 과일입니다.", "이것은 참외라서 여름에 먹는 과일입니다.", "이것은 참외지만 여름에 먹는 과일입니다.", "이것은 참외이고 여름에 먹는 과일입니다."], answer: 0, hint: "'참외' 뒤에 '인데'를 붙입니다.", explanation: "'참외인데'가 화제 및 배경 도입에 올바른 표현입니다." }
+        ];
+
+        const unit2Questions = [
+            { id: 1, category: "어휘", question: "다음 설명에 해당하는 취미 어휘로 가장 알맞은 것을 고르십시오.", passage: "주말이나 쉬는 날에 경치 좋은 산에 올라가는 활동입니다.", options: ["등산", "조깅", "낚시", "수영"], answer: 0, hint: "산에 올라가는 운동입니다.", explanation: "산에 올라가는 취미 활동은 '등산'입니다." },
+            { id: 2, category: "어휘", question: "다음 설명의 빈칸에 들어갈 동호회 어휘로 알맞은 것을 고르십시오.", passage: "동호회 활동과 모임 운영을 위해 회원들이 함께 모아서 내는 돈을 (      )(이)라고 합니다.", options: ["회비", "요금", "용돈", "월세"], answer: 0, hint: "모임 운영비입니다.", explanation: "회원들이 내는 운영비는 '회비'입니다." },
+            { id: 3, category: "문법", question: "다음 빈칸에 들어갈 알맞은 명사화 문법 형태를 고르십시오.", passage: "가: 취미가 뭐예요?\n나: 저는 주말마다 음식 요리하(      )(을/를) 좋아해요.", options: ["는 것", "는 지", "는 게", "는 기"], answer: 0, hint: "동사를 명사로 바꾸는 '-는 것'입니다.", explanation: "'요리하다' 어간 뒤에 '-는 것'이 붙습니다." },
+            { id: 4, category: "문법", question: "다음 빈칸에 들어갈 알맞은 능력/방법 표현을 고르십시오.", passage: "가: 혹시 자동차 운전(      )?\n나: 네, 운전면허가 있어서 운전할 수 있어요.", options: ["할 줄 알아요", "할 줄 몰라요", "하는 게 좋아요", "하려고 해요"], answer: 0, hint: "방법/능력 유무 어미입니다.", explanation: "운전을 할 수 있으므로 '할 줄 알아요'가 맞습니다." },
+            { id: 5, category: "문법", question: "다음 두 동작을 '동사 + -거나'를 사용하여 바르게 연결한 것을 고르십시오.", passage: "보기: [ 시간이 나면 사진을 찍다 + 그림을 그린다 ]", options: ["시간이 나면 사진을 찍거나 그림을 그려요.", "시간이 나면 사진을 찍이나 그림을 그려요.", "시간이 나면 사진을 찍고나 그림을 그려요.", "시간이 나면 사진을 찍거나가 그림을 그려요."], answer: 0, hint: "동사 어간 뒤 '-거나'가 붙습니다.", explanation: "'찍다'어간 뒤 '-거나'가 결합합니다." }
+        ];
+
+        const unit3Questions = [
+            { id: 1, category: "어휘", question: "다음 설명에 해당하는 여행 장소 표현을 고르십시오.", passage: "바다와 모래사장이 펼쳐져 있어 걸으며 산책하기 좋은 장소입니다.", options: ["바닷가", "전통 시장", "미술관", "동물원"], answer: 0, hint: "바다 근처 산책 장소입니다.", explanation: "모래사장이 펼쳐진 곳은 '바닷가'입니다." },
+            { id: 2, category: "어휘", question: "다음 중 순우리말 날짜 단어 표현으로 '3일 동안'을 뜻하는 말은 무엇입니까?", options: ["사흘", "이틀", "나흘", "닷새"], answer: 0, hint: "3일 동안을 뜻하는 단어입니다.", explanation: "3일은 '사흘'이라고 합니다." },
+            { id: 3, category: "문법", question: "다음 빈칸에 들어갈 시도/경험 표현 형태를 고르십시오.", passage: "가: 한국의 대표 음식인 불고기를 (      )?\n나: 네, 지난주에 식당에서 먹어 봤어요.", options: ["먹어 봤어요", "먹으니까", "먹고 나서", "먹거나"], answer: 0, hint: "과거 경험 '동사 + -아/어 보다'입니다.", explanation: "경험을 묻는 질문이므로 '먹어 봤어요?'가 정답입니다." },
+            { id: 4, category: "문법", question: "다음 청유문 제안 앞의 올바른 이유 접속 표현을 고르십시오.", passage: "가: 오늘 날씨가 참 바깥 활동하기 좋네요.\n나: 네, 날씨가 (      ) 우리 같이 공원으로 산책할까요?", options: ["좋으니까", "좋아서", "좋고 나서", "좋거나"], answer: 0, hint: "청유문 앞 원인 어미입니다.", explanation: "청유문 어미 앞에는 '-(으)니까'만 가능합니다." },
+            { id: 5, category: "문법", question: "다음 두 동작의 완결 후 순서를 나타내는 연결 어미를 고르십시오.", passage: "가: 외출해서 집에 오면 제일 먼저 뭐 해요?\n나: 깨끗하게 손을 (      ) 밥을 먹어요.", options: ["씻고 나서", "씻으려고", "씻으니까", "씻어 봐서"], answer: 0, hint: "앞 행동 완료 후 뒤 행동을 진행합니다.", explanation: "행동 완료 후 진행은 '-고 나서'입니다." }
+        ];
+
+        const unit4Questions = [
+            { id: 1, category: "어휘", question: "다음 설명에 해당하는 신발 부위 관련 어휘를 고르십시오.", passage: "구두나 운동화의 뒷부분 바닥에 붙어 있는 높낮이 부분을 뜻합니다.", options: ["굽", "사이즈", "색깔", "길이"], answer: 0, hint: "'굽이 높다/낮다' 표현입니다.", explanation: "신발 뒤쪽 높낮이 부분은 '굽'이라고 합니다." },
+            { id: 2, category: "어휘", question: "다음 대화의 빈칸에 알맞은 상점 거래 동작 단어를 고르십시오.", passage: "가: 지난주에 산 운동화를 다른 디자인으로 (      )하고 싶어요.\n나: 네, 손님. 영수증을 보여 주시겠어요?", options: ["교환", "할인", "환불", "주문"], answer: 0, hint: "다른 상품으로 바꿉니다.", explanation: "다른 상품으로 바꾸는 행동은 '교환'입니다." },
+            { id: 3, category: "문법", question: "다음 빈칸에 들어갈 알맞은 형용사 추측 형태를 고르십시오.", passage: "가: 손님, 이 구두는 어떠세요?\n나: 음, 굽이 좀 (      ). 조금 더 낮은 거로 보여 주세요.", options: ["높은 것 같아요", "높는 것 같아요", "높은 것 있었어요", "높을까 해요"], answer: 0, hint: "형용사 추측 '-(으)ㄴ 것 같다'입니다.", explanation: "'높다' + '-(으)ㄴ 것 같다' -> '높은 것 같아요'." },
+            { id: 4, category: "문법", question: "다음 빈칸에 들어갈 알맞은 과거 명사 수식 형태를 고르십시오.", passage: "가: 어제 (      ) 영화가 어땠어요?\n나: 내용이 조금 슬펐지만 아주 재미있었어요.", options: ["본", "보는", "볼", "보아서"], answer: 0, hint: "과거 완료 명사 수식 어미입니다.", explanation: "'보다' + '-(으)ㄴ' -> '본'." },
+            { id: 5, category: "문법", question: "다음 빈칸에 들어갈 수단/결제 방식 조사 형태를 고르십시오.", passage: "가: 백화점에서 옷을 어떻게 계산했어요?\n나: 신용카드(      ) 계산했어요.", options: ["로", "으로", "에", "에서"], answer: 0, hint: "받침 없는 명사 뒤 수단 조사입니다.", explanation: "받침 없는 명사 뒤 수단 조사는 '로'가 연결됩니다." }
+        ];
+
+        const unit5Questions = [
+            { id: 1, category: "어휘", question: "다음 설명에 해당하는 금융 거래 어휘로 가장 알맞은 것을 고르십시오.", passage: "미국 달러나 엔화 등 외국 돈을 한국 원화로 바꾸거나, 반대로 한국 돈을 외국 돈으로 바꾸는 업무입니다.", options: ["환전", "입금", "출금", "송금"], answer: 0, hint: "외화 교환 업무입니다.", explanation: "화폐 교환은 '환전'입니다." },
+            { id: 2, category: "문법", question: "다음 대화의 빈칸에 알맞은 용건 제시 문법 형태를 고르십시오.", passage: "가: 어서 오세요. 어떻게 오셨어요?\n나: 고향에 있는 가족에게 소포를 (      ).", options: ["보내려고 왔는데요", "보내면 되는데요", "보낼 것인데요", "보내기로 했는데요"], answer: 0, hint: "방문 목적과 대화 도입 결합입니다.", explanation: "용건 도입으로 '보내려고 왔는데요'가 자연스럽습니다." },
+            { id: 3, category: "문법", question: "다음 빈칸에 들어갈 'ㅂ' 불규칙 형용사의 알맞은 추측 형태를 고르십시오.", passage: "가: 일기 예보에서 내일 날씨가 어떻다고 했어요?\n나: 바람이 세게 불고 아주 (      ). 두꺼운 옷을 입으세요.", options: ["추울 거예요", "춥을 거예요", "춥는데요", "추우면 돼요"], answer: 0, hint: "'춥다' ㅂ 불규칙 활용입니다.", explanation: "'춥다' + '-(으)ㄹ 거예요' -> '추울 거예요'." },
+            { id: 4, category: "문법", question: "다음 대화의 빈칸에 들어갈 '르' 불규칙 형용사 '다르다'의 활용 형태를 고르십시오.", passage: "가: 엥흐 씨 고향 음식은 한국 음식과 비슷해요?\n나: 아니요, 맛과 재료가 완전히 (      ). 전혀 안 매워요.", options: ["달라요", "다라요", "다르고 있었어요", "달라는데요"], answer: 0, hint: "'다르다' 어간 모음 어미 결합입니다.", explanation: "'다르다' + '-아요' -> '달라요'." },
+            { id: 5, category: "문법", question: "다음 대화의 빈칸에 들어갈 알맞은 해결/충분 조건 표현을 고르십시오.", passage: "가: 미안해요, 지갑을 안 가져와서 현금이 없는데요.\n나: 괜찮아요. 여기서 신용카드로 (      ).", options: ["내면 돼요", "내는데요", "낼 거예요", "내기로 했어요"], answer: 0, hint: "해결 방안 제시 어미입니다.", explanation: "해결 방안 제시는 '-(으)면 되다'를 써서 '내면 돼요'가 정답입니다." }
+        ];
+
+        const unit6Questions = [
+            { id: 1, category: "어휘", question: "다음 가전제품을 사용하는 동작 표현으로 가장 알맞은 동사를 고르십시오.", passage: "보기: [ 세탁기 (  ?  ) / 청소기 (  ?  ) ]", options: ["돌리다", "버리다", "닦다", "씻다"], answer: 0, hint: "기계 작동 동사입니다.", explanation: "가전제품 가동에는 동사 '돌리다'를 씁니다." },
+            { id: 2, category: "문법", question: "다음 빈칸에 들어갈 알맞은 규칙/반복 조사 형태를 고르십시오.", passage: "가: 안나 씨는 언제 집안 대청소를 해요?\n나: 저는 평일에는 바빠서 토요일(      ) 청소를 해요.", options: ["마다", "부터", "까지", "에게"], answer: 0, hint: "매번 반복됨을 나타냅니다.", explanation: "반복을 나타내는 조사는 '마다'입니다." },
+            { id: 3, category: "문법", question: "다음 대화의 빈칸에 들어갈 화자의 행동 약속/의지 표현을 고르십시오.", passage: "가: 공항에 도착하면 꼭 연락해 주세요.\n나: 네, 도착하자마자 바로 전화(      ).", options: ["할게요", "하겠어요만", "했는데요", "하는 중이에요"], answer: 0, hint: "자발적 약속 어미입니다.", explanation: "약속 어미 '-(으)ㄹ게요'를 써서 '전화할게요'가 맞습니다." },
+            { id: 4, category: "문법", question: "다음 빈칸에 들어갈 순서/선후 관계 문법 형태를 고르십시오.", passage: "가: 위생을 위해 식사하기 직전에 뭘 해야 돼요?\n나: 밥을 (      ) 반드시 비누로 손을 씻어야 해요.", options: ["먹기 전에", "먹은 후에", "먹고 나서", "먹으려고"], answer: 0, hint: "행동 전 순서 어미입니다.", explanation: "선행 행동 전 순서는 '-기 전에'입니다." },
+            { id: 5, category: "문법", question: "다음 빈칸에 들어갈 완료 후 진행(선후) 표현을 고르십시오.", passage: "가: 방 청소를 어떻게 진행할까요?\n나: 청소기를 (      ) 누더기로 방을 닦으세요.", options: ["돌린 후에", "돌리기 전에", "돌리려고", "돌리니까"], answer: 0, hint: "완료 후 진행 순서 어미입니다.", explanation: "선행 작업 완료 후 순서는 '-(으)ㄴ 후에'입니다." }
+        ];
+
+        const unit7Questions = [
+            { id: 1, category: "어휘", question: "다음 설명에 해당하는 길거리 시설물로 가장 알맞은 것을 고르십시오.", passage: "도로 위로 사람들이 걸어서 안전하게 건너갈 수 있도록 만든 다리 모양의 구조물입니다.", options: ["육교", "지하도", "횡단보도", "사거리"], answer: 0, hint: "도로 위 다리 모양 길입니다.", explanation: "사람들이 건너는 다리는 '육교'입니다." },
+            { id: 2, category: "어휘", question: "다음 설명의 빈칸에 들어갈 알맞은 단어를 고르십시오.", passage: "네 개의 길이 서로 만나는 교차로 지점을 (      )(이)라고 합니다.", options: ["삼거리", "사거리", "출구", "주차장"], answer: 1, hint: "숫자 4와 관련이 있습니다.", explanation: "4개 도로 교차점은 '사거리'입니다." },
+            { id: 3, category: "문법", question: "다음 빈칸에 들어갈 알맞은 어미 형태를 고르십시오.", passage: "가: 아이들이 매운 떡볶이를 잘 (      )?\n나: 안 매운 것도 있으니까 잘 먹을 거예요.", options: ["먹을까요", "먹을 것 같아요", "먹는지 몰라요", "먹다가"], answer: 0, hint: "추측 질문 '-(으)ㄹ까요'입니다.", explanation: "상대방의 추측을 물을 때 '-(으)ㄹ까요'를 사용합니다." },
+            { id: 4, category: "문법", question: "다음 빈칸에 들어갈 말로 가장 알맞은 것을 고르십시오.", passage: "가: 혹시 시청에 어떻게 (      ) 아세요?\n나: 네, 지하철 1호선을 타시면 돼요.", options: ["가는지", "가지 않다가", "갈 것 같아서", "가면서"], answer: 0, hint: "방법 질문 어미 '-는지 알다'입니다.", explanation: "방법 인지 여부를 물을 때 '-는지 아세요?'가 맞습니다." },
+            { id: 5, category: "문법", question: "다음 빈칸에 들어갈 알맞은 어미를 고르십시오.", passage: "가: 어제 뭐 하다가 잠들었어요?\n나: 밤에 책을 (      ) 너무 피곤해서 그냥 잤어요.", options: ["읽고 나서", "읽다가", "읽으면", "읽는 동안에"], answer: 1, hint: "행동 진행 중 전환 어미입니다.", explanation: "행동 도중 전환이 일어날 때는 '-다가'를 사용합니다." }
+        ];
+
+        const unit8Questions = [
+            { id: 1, category: "어휘", question: "다음 설명에 해당하는 모임으로 가장 알맞은 것을 고르십시오.", passage: "새 집으로 이사한 후 친구나 친지를 초대하여 음식과 선물을 나누는 모임입니다.", options: ["집들이", "환영회", "송별회", "동호회"], answer: 0, hint: "이사 후 손님 모임입니다.", explanation: "새 집 이사 모임은 '집들이'입니다." },
+            { id: 2, category: "어휘", question: "다음 대화의 빈칸에 들어갈 알맞은 모임 단어를 고르십시오.", passage: "가: 이번 달에 고향으로 돌아가는 다니엘 씨를 위해 (      )(을)를 하기로 했어요.\n나: 그래요? 다니엘 씨가 떠난다니 정말 아쉽네요.", options: ["집들이", "환영회", "송별회", "생일 파티"], answer: 2, hint: "떠나는 사람 배웅 모임입니다.", explanation: "이별 시 여는 모임은 '송별회'입니다." },
+            { id: 3, category: "문법", question: "다음 대화의 빈칸에 들어갈 알맞은 결심/약속 표현을 고르십시오.", passage: "가: 이번 주말에 친구들하고 뭘 할 거예요?\n나: 같이 한강 공원에 가서 자전거를 (      ).", options: ["타기로 했어요", "타고 있어요", "탔으면 좋겠어요", "타도 돼요"], answer: 0, hint: "확정된 약속 어미 '-기로 하다'입니다.", explanation: "약속이나 결정을 말할 때는 '-기로 했어요'가 맞습니다." },
+            { id: 4, category: "문법", question: "다음 대화의 빈칸에 알맞은 의도/망설임 표현을 고르십시오.", passage: "가: 저녁 식사로 뭘 먹을 거예요?\n나: 아직 확실하지 않은데, 피자를 (      ).", options: ["먹을까 해요", "먹기로 했어요", "먹었을 테니까요", "먹어 보았어요"], answer: 0, hint: "막연한 생각 어미 '-(으)ㄹ까 하다'입니다.", explanation: "고려 중인 계획은 '-(으)ㄹ까 해요'를 씁니다." },
+            { id: 5, category: "문법", question: "다음 빈칸에 들어갈 알맞은 약속/제안 조건 표현을 고르십시오.", passage: "가: 제가 케이크를 (      ) 크리스 씨는 음료수를 준비해 주세요.\n나: 네, 제가 음료수를 사 올게요.", options: ["살 테니까", "사기로 해서", "사까 해서", "사면"], answer: 0, hint: "화자의 행동 의지를 조건으로 제안합니다.", explanation: "화자의 의지 조건 전제는 '살 테니까'가 올바릅니다." }
+        ];
+
+        const unit9Questions = [
+            { id: 1, category: "어휘", question: "다음 대화의 빈칸에 들어갈 알맞은 약/처방 동작 어휘를 고르십시오.", passage: "가: 손가락을 커터 칼에 조금 베였어요.\n나: 상처에 연고를 (      ) 반창고를 붙이세요.", options: ["바르고", "먹고", "넣고", "짓고"], answer: 0, hint: "'연고'는 피부에 바릅니다.", explanation: "연고는 상처에 '바르다'를 씁니다." },
+            { id: 2, category: "어휘", question: "다음 증상이 있을 때 찾아가야 하는 병원 진료 과목을 고르십시오.", passage: "가: 상한 음식을 먹었는지 배가 심하게 아프고 계속 설사를 해요.\n나: 빨리 (      )에 가셔서 진료를 받으세요.", options: ["내과", "안과", "치과", "피부과"], answer: 0, hint: "소화기 진료과입니다.", explanation: "배탈, 설사는 '내과'에서 진료합니다." },
+            { id: 3, category: "문법", question: "다음 대화의 빈칸에 알맞은 외양/상태 추측 표현을 고르십시오.", passage: "가: 오늘 얼굴이 많이 (      ). 무슨 힘든 일 있으세요?\n나: 어제 밤새워서 보고서를 쓰느라 2시간밖에 못 잤거든요.", options: ["피곤해 보여요", "피곤하게 돼요", "피곤하기로 했어요", "피곤할까 해요"], answer: 0, hint: "외양 관찰 추측 '-아/어 보이다'입니다.", explanation: "겉모습 보고 추측할 때 '피곤해 보여요'가 바릅니다." },
+            { id: 4, category: "문법", question: "다음 대화의 빈칸에 들어갈 알맞은 제안/권유 표현을 고르십시오.", passage: "가: 요즘 업무가 많아서 머리도 아프고 너무 피곤해요.\n나: 주말에는 일을 내려놓고 집에서 푹 (      )?", options: ["쉬는 게 어때요", "쉬기로 했어요", "쉬었을 것 같아요", "쉬는 중이에요"], answer: 0, hint: "권유 표현 '-는 게 어때요?'입니다.", explanation: "휴식을 제안할 때는 '쉬는 게 어때요?'가 맞습니다." },
+            { id: 5, category: "문법", question: "다음 빈칸에 들어갈 'ㅅ' 불규칙 동사의 올바른 과거형을 고르십시오.", passage: "가: 독감에 걸려서 많이 아팠는데 지금은 좀 어떠세요?\n나: 약을 먹고 잘 쉬어서 이제 완전히 다 (      ).", options: ["나았어요", "낫았어요", "낫었어요", "나았었어요"], answer: 0, hint: "'낫다'는 모음 앞에서 'ㅅ' 탈락.", explanation: "'낫다' + '-았어요' -> '나았어요'." }
+        ];
+
+        // 1~9과 통합 종합 문제 모음 (모의고사 / 통합 평가용)
+        const allIntegratedQuestions = [
+            ...unit1Questions,
+            ...unit2Questions,
+            ...unit3Questions,
+            ...unit4Questions,
+            ...unit5Questions,
+            ...unit6Questions,
+            ...unit7Questions,
+            ...unit8Questions,
+            ...unit9Questions
+        ];
+
+        // 단원 구조 매핑 객체
+        const unitDataMap = {
+            "all": { title: "통합 형성평가 (1과~9과 전체)", data: allIntegratedQuestions, badgeBg: "bg-emerald-100 text-emerald-800" },
+            "1": { title: "1과 • 소개", data: unit1Questions, badgeBg: "bg-sky-100 text-sky-800" },
+            "2": { title: "2과 • 취미", data: unit2Questions, badgeBg: "bg-purple-100 text-purple-800" },
+            "3": { title: "3과 • 여행 경험", data: unit3Questions, badgeBg: "bg-teal-100 text-teal-800" },
+            "4": { title: "4과 • 쇼핑", data: unit4Questions, badgeBg: "bg-amber-100 text-amber-800" },
+            "5": { title: "5과 • 우체국과 은행", data: unit5Questions, badgeBg: "bg-teal-100 text-teal-800" },
+            "6": { title: "6과 • 하루 일과", data: unit6Questions, badgeBg: "bg-blue-100 text-blue-800" },
+            "7": { title: "7과 • 길 찾기", data: unit7Questions, badgeBg: "bg-indigo-100 text-indigo-800" },
+            "8": { title: "8과 • 모임", data: unit8Questions, badgeBg: "bg-emerald-100 text-emerald-800" },
+            "9": { title: "9과 • 건강한 생활", data: unit9Questions, badgeBg: "bg-rose-100 text-rose-800" }
+        };
+
+        /* STREAMING_CHUNK:Building React Main App Component... */
+        function App() {
+            const [viewMode, setViewMode] = useState('home'); // 'home', 'quiz', 'result'
+            const [quizMode, setQuizMode] = useState('practice'); // 'practice', 'exam'
+            const [selectedUnitKey, setSelectedUnitKey] = useState('all'); // default: 'all' or '7'
+            const [currentQIndex, setCurrentQIndex] = useState(0);
+            const [userAnswers, setUserAnswers] = useState({});
+            const [submitted, setSubmitted] = useState({});
+            const [showHint, setShowHint] = useState({});
+            const [bookmarks, setBookmarks] = useState(new Set());
+            const [timeLeft, setTimeLeft] = useState(1800); // 30분
+            const [timerActive, setTimerActive] = useState(false);
+            const [userPoints, setUserPoints] = useState(120);
+
+            // Google Sheet Submission State
+            const [studentName, setStudentName] = useState('');
+            const [sheetUrl, setSheetUrl] = useState(localStorage.getItem('gangnam_google_sheet_url') || '');
+            const [isSending, setIsSending] = useState(false);
+            const [sendSuccess, setSendSuccess] = useState(false);
+            const [showGuideModal, setShowGuideModal] = useState(false);
+
+            // Current questions dataset
+            const currentUnitObj = unitDataMap[selectedUnitKey] || unitDataMap['all'];
+            const activeQuestions = currentUnitObj.data;
+
+            // Timer Effect for Exam mode
+            useEffect(() => {
+                let interval = null;
+                if (timerActive && timeLeft > 0) {
+                    interval = setInterval(() => {
+                        setTimeLeft(prev => prev - 1);
+                    }, 1000);
+                } else if (timeLeft === 0 && timerActive) {
+                    setTimerActive(false);
+                    handleFinishQuiz();
+                }
+                return () => clearInterval(interval);
+            }, [timerActive, timeLeft]);
+
+            // Start Quiz
+            const handleStartQuiz = (unitKey, mode = 'practice') => {
+                setSelectedUnitKey(unitKey);
+                setQuizMode(mode);
+                setUserAnswers({});
+                setSubmitted({});
+                setShowHint({});
+                setCurrentQIndex(0);
+                setTimeLeft(1800);
+                setViewMode('quiz');
+                setSendSuccess(false);
+                setTimerActive(mode === 'exam');
+            };
+
+            // Option Select
+            const handleSelectOption = (optIdx) => {
+                const currentQ = activeQuestions[currentQIndex];
+                if (!currentQ || submitted[currentQ.id]) return;
+                setUserAnswers(prev => ({ ...prev, [currentQ.id]: optIdx }));
+            };
+
+            // Submit single question in practice mode
+            const handleSubmitSingle = () => {
+                const currentQ = activeQuestions[currentQIndex];
+                if (!currentQ) return;
+                const qId = currentQ.id;
+                if (userAnswers[qId] === undefined) return;
+                
+                setSubmitted(prev => ({ ...prev, [qId]: true }));
+                if (userAnswers[qId] === currentQ.answer) {
+                    setUserPoints(p => p + 10);
+                }
+            };
+
+            // Toggle Bookmark
+            const toggleBookmark = (idx) => {
+                const newB = new Set(bookmarks);
+                if (newB.has(idx)) {
+                    newB.delete(idx);
+                } else {
+                    newB.add(idx);
+                }
+                setBookmarks(newB);
+            };
+
+            // Finish Quiz
+            const handleFinishQuiz = () => {
+                setTimerActive(false);
+                setViewMode('result');
+
+                // Mark all submitted
+                const newSub = {};
+                activeQuestions.forEach(q => { newSub[q.id] = true; });
+                setSubmitted(newSub);
+
+                let correctCount = 0;
+                activeQuestions.forEach(q => {
+                    if (userAnswers[q.id] === q.answer) correctCount++;
+                });
+
+                setUserPoints(p => p + correctCount * 5);
+                const score = Math.round((correctCount / activeQuestions.length) * 100);
+                if (score >= 70 && window.confetti) {
+                    window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }
+            };
+
+            // Calculate score stats
+            const stats = useMemo(() => {
+                let correct = 0;
+                let catStats = { "어휘": { total: 0, right: 0 }, "문법": { total: 0, right: 0 } };
+
+                activeQuestions.forEach(q => {
+                    const isRight = userAnswers[q.id] === q.answer;
+                    if (isRight) correct++;
+                    
+                    const cat = q.category || "어휘";
+                    if (!catStats[cat]) catStats[cat] = { total: 0, right: 0 };
+                    catStats[cat].total += 1;
+                    if (isRight) catStats[cat].right += 1;
+                });
+
+                return {
+                    correct,
+                    total: activeQuestions.length,
+                    score: Math.round((correct / activeQuestions.length) * 100),
+                    catStats
+                };
+            }, [userAnswers, activeQuestions]);
+
+            // Format Timer
+            const formatTime = (seconds) => {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            };
+
+            // Google Sheet Submit Handler
+            const handleGoogleSheetSubmit = async (e) => {
+                e.preventDefault();
+                if (!studentName.trim()) {
+                    alert('학습자 이름을 입력해 주세요.');
+                    return;
+                }
+                if (!sheetUrl.trim()) {
+                    alert('구글 앱스 스크립트(Web App URL) 주소를 입력해 주세요.');
+                    return;
+                }
+
+                setIsSending(true);
+                const payload = {
+                    studentName: studentName.trim(),
+                    unitTitle: currentUnitObj.title,
+                    score: stats.score,
+                    correctCount: stats.correct,
+                    totalCount: stats.total,
+                    date: new Date().toLocaleString('ko-KR')
+                };
+
+                try {
+                    await fetch(sheetUrl.trim(), {
+                        method: 'POST',
+                        mode: 'no-cors', // standard GAS web app request
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    localStorage.setItem('gangnam_google_sheet_url', sheetUrl.trim());
+                    setSendSuccess(true);
+                    alert('성적이 구글 시트로 성공적으로 제출되었습니다!');
+                } catch (err) {
+                    console.error(err);
+                    alert('전송 중 오류가 발생했습니다. URL을 다시 확인해 주세요.');
+                } finally {
+                    setIsSending(false);
+                }
+            };
+
+            const q = activeQuestions[currentQIndex] || activeQuestions[0];
+            const isSub = q ? submitted[q.id] : false;
+
+            return (
+                <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
+                    {/* 상단 네이버 스타일 브랜드 헤더 (요구사항 1: 빨간색 버튼 제거 완료) */}
+                    <header className="bg-naver text-white shadow-md sticky top-0 z-50">
+                        <div className="max-w-6xl mx-auto px-4 py-2.5 sm:py-3 flex items-center justify-between">
+                            {/* 로고 영역 */}
+                            <div className="flex items-center space-x-2.5 cursor-pointer" onClick={() => setViewMode('home')}>
+                                <div className="bg-white text-naver font-black text-sm sm:text-base px-2.5 py-1 rounded-xl shadow-sm flex items-center space-x-1 shrink-0">
+                                    <span className="text-amber-500">도란</span>
+                                    <span>도란</span>
+                                </div>
+                                <div>
+                                    <h1 className="font-extrabold text-sm sm:text-base leading-tight tracking-tight">강남한국어</h1>
+                                    <p className="text-[10px] sm:text-xs text-emerald-100 font-medium">서울대 한국어+ | 전혜현 대표강사</p>
+                                </div>
+                            </div>
+
+                            {/* 우측 네비게이션: 단원 홈 & 포인트 배지 (빨간 버튼 제거) */}
+                            <div className="flex items-center space-x-2">
+                                <div className="flex items-center space-x-1.5 bg-naver-dark/60 px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold border border-white/20">
+                                    <span className="text-yellow-300">🪙</span>
+                                    <span>{userPoints} P</span>
+                                </div>
+
+                                <button 
+                                    onClick={() => setViewMode('home')}
+                                    className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition shrink-0 ${viewMode === 'home' ? 'bg-white/25 text-white' : 'hover:bg-white/10 text-emerald-50'}`}>
+                                    <i className="fa-solid fa-house mr-1"></i>단원 홈
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* 메인 콘텐츠 영역 */}
+                    <main className="flex-1 max-w-6xl w-full mx-auto p-3 sm:p-6">
+
+                        {/* ========================================== */}
+                        {/* 1. 단원 홈 화면 */}
+                        {/* ========================================== */}
+                        {viewMode === 'home' && (
+                            <div className="space-y-5 sm:space-y-7">
+                                {/* 메인 그린 배너 (요구사항 2: 노란색 영역에 통합 형성평가 버튼 탑재) */}
+                                <div className="bg-gradient-to-r from-emerald-600 via-naver to-teal-500 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-lg relative overflow-hidden">
+                                    <div className="relative z-10 max-w-3xl">
+                                        <div className="inline-flex items-center space-x-1.5 bg-white/20 backdrop-blur-md px-3.5 py-1 rounded-full text-xs sm:text-sm font-extrabold text-emerald-100 mb-3 border border-white/30">
+                                            <span>✨ 서울대 한국어+ 2A 공식 통합 형성평가 App</span>
+                                        </div>
+                                        <h2 className="text-2xl sm:text-3xl font-black mb-3 leading-tight">
+                                            전혜현 강사님과 함께하는 <br/> 서울대 한국어+ 2A 형성평가
+                                        </h2>
+                                        <p className="text-emerald-50 text-sm sm:text-base mb-6 leading-relaxed">
+                                            도란도란, 마음을 나누는 따뜻한 공간 '강남 가족센터 한국어 교실'
+                                        </p>
+
+                                        {/* 요구사항 2: 두번째 통합형성평가 버튼이 위치하는 메인 액션 영역 */}
+                                        <div className="bg-amber-300/90 backdrop-blur-md p-4 sm:p-5 rounded-2xl border-2 border-yellow-200 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-900">
+                                            <div className="text-center sm:text-left">
+                                                <span className="text-xs font-black uppercase text-amber-900 tracking-wider block">COMPREHENSIVE TEST</span>
+                                                <h3 className="font-black text-lg sm:text-xl">🚀 통합 형성평가 (1과~9과 전체)</h3>
+                                                <p className="text-xs font-semibold text-slate-700">모든 단원의 핵심 어휘와 문법을 한 번에 평가하세요!</p>
+                                            </div>
+                                            <div className="flex space-x-2 w-full sm:w-auto">
+                                                <button 
+                                                    onClick={() => handleStartQuiz('all', 'practice')}
+                                                    className="flex-1 sm:flex-none bg-slate-900 hover:bg-slate-800 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow transition">
+                                                    연습 모드
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleStartQuiz('all', 'exam')}
+                                                    className="flex-1 sm:flex-none bg-naver hover:bg-naver-hover text-white font-black px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow transition">
+                                                    실전 모의고사
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 단원 카드 그리드 (요구사항 3: 모든 카드에 '형성평가 25문제' 배지 표기) */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-base sm:text-xl font-black text-slate-800 flex items-center space-x-2">
+                                            <span>📚 서울대 한국어+ 단원별 형성평가</span>
+                                        </h3>
+                                        <span className="bg-naver/10 text-naver font-bold text-xs px-3 py-1 rounded-full">총 9개 단원 풀가동</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {[
+                                            { num: 1, title: "소개", key: "1" },
+                                            { num: 2, title: "취미", key: "2" },
+                                            { num: 3, title: "여행경험", key: "3" },
+                                            { num: 4, title: "쇼핑", key: "4" },
+                                            { num: 5, title: "우체국과 은행", key: "5" },
+                                            { num: 6, title: "하루 일과", key: "6" },
+                                            { num: 7, title: "길 찾기", key: "7" },
+                                            { num: 8, title: "모임", key: "8" },
+                                            { num: 9, title: "건강한 생활", key: "9" }
+                                        ].map((u) => (
+                                            <div 
+                                                key={u.num}
+                                                className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between relative group hover:border-naver">
+                                                <span className="absolute top-0 right-0 bg-emerald-500 text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded-bl-xl uppercase tracking-wider">
+                                                    OPEN
+                                                </span>
+
+                                                <div>
+                                                    <div className="flex items-center space-x-2 mb-2">
+                                                        <span className="text-xs sm:text-sm font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-naver">
+                                                            {u.num}단원
+                                                        </span>
+                                                        {/* 요구사항 3: 작은 사각형 글씨를 '형성평가 25문제'로 통일 */}
+                                                        <span className="text-xs font-bold bg-amber-100 text-amber-900 border border-amber-200 px-2 py-0.5 rounded-md">
+                                                            형성평가 25문제
+                                                        </span>
+                                                    </div>
+                                                    <h4 className="font-extrabold text-lg text-slate-800 mb-3 group-hover:text-naver transition">
+                                                        {u.title}
+                                                    </h4>
+                                                </div>
+
+                                                <div className="flex space-x-2 pt-3 border-t border-slate-100">
+                                                    <button 
+                                                        onClick={() => handleStartQuiz(u.key, 'practice')}
+                                                        className="flex-1 bg-naver hover:bg-naver-hover text-white py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm transition">
+                                                        연습 모드
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleStartQuiz(u.key, 'exam')}
+                                                        className="flex-1 bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm transition">
+                                                        실전 모의고사
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ========================================== */}
+                        {/* 2. 퀴즈 / 평가 풀이 화면 */}
+                        {/* ========================================== */}
+                        {viewMode === 'quiz' && q && (
+                            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+                                {/* 좌측 문제지 영역 */}
+                                <div className="lg:col-span-3 space-y-4">
+
+                                    {/* 상단 프로그래스 카드 */}
+                                    <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2.5">
+                                            <span className="font-black text-slate-800 text-lg sm:text-xl">
+                                                문제 <span className="text-naver">{currentQIndex + 1}</span> / {activeQuestions.length}
+                                            </span>
+                                            <span className="bg-emerald-100 text-naver text-xs sm:text-sm px-3 py-1 rounded-full font-bold">
+                                                {q.category}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-center space-x-2">
+                                            {quizMode === 'exam' && (
+                                                <div className="font-mono text-sm sm:text-base font-extrabold bg-amber-50 text-amber-700 px-3 py-1 rounded-xl border border-amber-200">
+                                                    ⏳ {formatTime(timeLeft)}
+                                                </div>
+                                            )}
+
+                                            <button 
+                                                onClick={() => toggleBookmark(currentQIndex)}
+                                                className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold border transition ${
+                                                    bookmarks.has(currentQIndex) 
+                                                        ? 'bg-amber-400 text-slate-900 border-amber-400' 
+                                                        : 'bg-white text-slate-600 border-slate-200'
+                                                }`}>
+                                                {bookmarks.has(currentQIndex) ? '★ 마킹' : '☆ 마킹'}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* 프로그래스 바 */}
+                                    <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                                        <div 
+                                            className="bg-naver h-full transition-all duration-300"
+                                            style={{ width: `${((currentQIndex + 1) / activeQuestions.length) * 100}%` }}>
+                                        </div>
+                                    </div>
+
+                                    {/* 메인 문제 카드 */}
+                                    <div className="bg-white rounded-2xl p-5 sm:p-7 shadow-sm border border-slate-200 space-y-5 sm:space-y-6">
+                                        <div>
+                                            <span className="text-xs font-bold text-slate-400 block mb-1">
+                                                [{currentUnitObj.title}]
+                                            </span>
+                                            <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-snug mb-3">
+                                                Q{currentQIndex + 1}. {q.question}
+                                            </h3>
+                                            
+                                            {q.passage && (
+                                                <div className="bg-slate-50 border-l-4 border-naver p-4 sm:p-5 rounded-r-2xl font-medium text-slate-800 text-base sm:text-lg whitespace-pre-line leading-relaxed shadow-inner">
+                                                    {q.passage}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* 보기 4개 */}
+                                        <div className="space-y-3">
+                                            {q.options.map((opt, optIdx) => {
+                                                const isSelected = userAnswers[q.id] === optIdx;
+                                                const isRight = optIdx === q.answer;
+
+                                                let btnStyle = "bg-white border-slate-200 text-slate-800 hover:border-emerald-300";
+                                                let badgeBg = "bg-slate-100 text-slate-700";
+
+                                                if (isSub) {
+                                                    if (isRight) {
+                                                        btnStyle = "bg-emerald-100 border-naver text-emerald-950 font-bold";
+                                                        badgeBg = "bg-naver text-white";
+                                                    } else if (isSelected) {
+                                                        btnStyle = "bg-rose-50 border-rose-400 text-rose-950 font-bold";
+                                                        badgeBg = "bg-rose-500 text-white";
+                                                    } else {
+                                                        btnStyle = "bg-slate-50 border-slate-200 opacity-60 text-slate-500";
+                                                    }
+                                                } else if (isSelected) {
+                                                    btnStyle = "bg-emerald-50 border-naver ring-2 ring-naver/30 text-naver font-bold";
+                                                    badgeBg = "bg-naver text-white";
+                                                }
+
+                                                return (
+                                                    <button 
+                                                        key={optIdx}
+                                                        onClick={() => handleSelectOption(optIdx)}
+                                                        disabled={isSub}
+                                                        className={`w-full text-left p-4 sm:p-5 rounded-xl border-2 transition flex items-center justify-between ${btnStyle}`}>
+                                                        <div className="flex items-center space-x-3.5">
+                                                            <span className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center text-sm sm:text-base font-extrabold transition shrink-0 ${badgeBg}`}>
+                                                                {optIdx + 1}
+                                                            </span>
+                                                            <span className="text-base sm:text-lg leading-snug">{opt}</span>
+                                                        </div>
+                                                        {isSub && isRight && <i className="fa-solid fa-circle-check text-naver text-lg sm:text-xl"></i>}
+                                                        {isSub && isSelected && !isRight && <i className="fa-solid fa-circle-xmark text-rose-500 text-lg sm:text-xl"></i>}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {/* 하단 채점 & 힌트 */}
+                                        <div className="pt-4 border-t border-slate-100 space-y-3">
+                                            <div className="flex items-center justify-between flex-wrap gap-2">
+                                                <button 
+                                                    onClick={() => setShowHint(prev => ({ ...prev, [q.id]: !prev[q.id] }))}
+                                                    className="text-xs sm:text-sm font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-3.5 py-2 rounded-xl transition">
+                                                    💡 힌트 {showHint[q.id] ? '숨기기' : '보기'}
+                                                </button>
+
+                                                {quizMode === 'practice' && !isSub && (
+                                                    <button 
+                                                        onClick={handleSubmitSingle}
+                                                        disabled={userAnswers[q.id] === undefined}
+                                                        className="text-xs sm:text-sm font-bold text-white bg-naver hover:bg-naver-hover disabled:opacity-40 px-5 py-2 rounded-xl transition shadow-sm">
+                                                        정답 채점하기
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            {showHint[q.id] && (
+                                                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-sm sm:text-base text-amber-950 leading-relaxed font-medium">
+                                                    {q.hint}
+                                                </div>
+                                            )}
+
+                                            {isSub && (
+                                                <div className={`border rounded-2xl p-4 sm:p-5 space-y-2 text-sm sm:text-base ${
+                                                    userAnswers[q.id] === q.answer ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950' : 'bg-rose-50/90 border-rose-300 text-rose-950'
+                                                }`}>
+                                                    <div className="font-extrabold flex items-center space-x-1.5 text-base sm:text-lg">
+                                                        <span>👩‍🏫 전혜현 강사 해설</span>
+                                                    </div>
+                                                    <p><strong>정답:</strong> {q.answer + 1}번 ({q.options[q.answer]})</p>
+                                                    <p className="leading-relaxed"><strong>설명:</strong> {q.explanation}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* 이전 / 다음 버튼 */}
+                                    <div className="flex items-center justify-between pt-2">
+                                        <button 
+                                            disabled={currentQIndex === 0}
+                                            onClick={() => setCurrentQIndex(prev => Math.max(0, prev - 1))}
+                                            className="px-5 py-2.5 bg-white border border-slate-200 text-slate-800 font-bold rounded-xl text-xs sm:text-sm hover:bg-slate-50 disabled:opacity-40 shadow-sm">
+                                            ← 이전 문제
+                                        </button>
+
+                                        {currentQIndex === activeQuestions.length - 1 ? (
+                                            <button 
+                                                onClick={handleFinishQuiz}
+                                                className="px-6 py-2.5 bg-naver hover:bg-naver-hover text-white font-black rounded-xl text-xs sm:text-sm shadow-md transition">
+                                                최종 제출 🎉
+                                            </button>
+                                        ) : (
+                                            <button 
+                                                onClick={() => setCurrentQIndex(prev => Math.min(activeQuestions.length - 1, prev + 1))}
+                                                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs sm:text-sm shadow-md">
+                                                다음 문제 →
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* 우측 OMR 네비게이터 */}
+                                <div className="space-y-4">
+                                    <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <h4 className="font-bold text-slate-800 text-sm">OMR 시트</h4>
+                                            <span className="text-xs text-slate-500 font-bold">
+                                                답변: {Object.keys(userAnswers).length} / {activeQuestions.length}
+                                            </span>
+                                        </div>
+
+                                        <div className="grid grid-cols-6 sm:grid-cols-5 lg:grid-cols-5 gap-1.5 max-h-[280px] sm:max-h-[380px] overflow-y-auto custom-scrollbar p-1">
+                                            {activeQuestions.map((item, qIdx) => {
+                                                const qSub = submitted[item.id];
+                                                const qAns = userAnswers[item.id];
+                                                const isRight = qAns === item.answer;
+                                                const isCurrent = currentQIndex === qIdx;
+                                                const isBookmarked = bookmarks.has(qIdx);
+
+                                                let cellStyle = "bg-slate-100 text-slate-700 border-slate-200";
+                                                if (qSub) {
+                                                    cellStyle = isRight ? "bg-emerald-500 text-white font-black border-emerald-500" : "bg-rose-500 text-white font-black border-rose-500";
+                                                } else if (qAns !== undefined) {
+                                                    cellStyle = "bg-emerald-100 text-naver font-bold border-emerald-300";
+                                                }
+
+                                                if (isCurrent) {
+                                                    cellStyle += " ring-2 ring-naver ring-offset-1 font-black";
+                                                }
+
+                                                return (
+                                                    <button 
+                                                        key={item.id}
+                                                        onClick={() => setCurrentQIndex(qIdx)}
+                                                        className={`h-9 sm:h-10 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-center relative transition ${cellStyle}`}>
+                                                        <span>{qIdx + 1}</span>
+                                                        {isBookmarked && (
+                                                            <span className="absolute -top-1 -right-1 text-[10px] text-amber-500">★</span>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+
+                                        <div className="mt-3 pt-3 border-t border-slate-100">
+                                            <button 
+                                                onClick={handleFinishQuiz}
+                                                className="w-full py-2.5 bg-naver hover:bg-naver-hover text-white font-bold rounded-xl text-xs sm:text-sm transition shadow-sm">
+                                                전체 제출 및 성적 보기
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ========================================== */}
+                        {/* 3. 결과 및 구글 시트 성적 전송 화면 (요구사항 5) */}
+                        {/* ========================================== */}
+                        {viewMode === 'result' && (
+                            <div className="max-w-2xl mx-auto space-y-5">
+                                {/* 성적 리포트 카드 */}
+                                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-md border border-slate-200 text-center space-y-4">
+                                    <span className="bg-emerald-100 text-naver px-3.5 py-1 rounded-full text-xs font-extrabold">
+                                        서울대 한국어+ 2A 성적 리포트
+                                    </span>
+
+                                    <h2 className="text-2xl sm:text-3xl font-black text-slate-800">
+                                        {currentUnitObj.title}
+                                    </h2>
+
+                                    <div className="w-32 h-32 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-full mx-auto flex flex-col items-center justify-center shadow-lg border-4 border-white">
+                                        <span className="text-3xl sm:text-4xl font-black">{stats.score}점</span>
+                                        <span className="text-xs font-bold text-emerald-100 mt-0.5">
+                                            {stats.total}개 중 {stats.correct}개 맞춤
+                                        </span>
+                                    </div>
+
+                                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs sm:text-sm text-slate-700 leading-relaxed max-w-md mx-auto">
+                                        <span className="font-bold text-naver block mb-1 text-sm sm:text-base">👩‍🏫 전혜현 대표강사 총평</span>
+                                        {stats.score >= 80 
+                                            ? "훌륭합니다! 어휘와 핵심 문법을 확실히 이행하셨습니다." 
+                                            : stats.score >= 60 
+                                            ? "수고하셨습니다! 틀린 문제 해설을 확인하여 부족한 부분을 보완해 보세요." 
+                                            : "복습이 필요합니다! 단원별 연습 모드로 틀린 문제를 반복 학습해 보세요."}
+                                    </div>
+                                </div>
+
+                                {/* 요구사항 5: 구글 시트 성적 전송 카드 */}
+                                <div className="bg-white rounded-3xl p-6 shadow-md border border-slate-200 space-y-4">
+                                    <div className="flex items-center justify-between border-b pb-3">
+                                        <h3 className="font-extrabold text-base sm:text-lg text-slate-800 flex items-center space-x-2">
+                                            <span className="text-emerald-600"><i className="fa-solid fa-file-excel"></i></span>
+                                            <span>내 구글 드라이브 구글 시트에 성적 전송</span>
+                                        </h3>
+                                        <button 
+                                            onClick={() => setShowGuideModal(!showGuideModal)}
+                                            className="text-xs text-naver font-bold hover:underline">
+                                            ❓ 시트 설정 방법
+                                        </button>
+                                    </div>
+
+                                    {/* 안내 가이드 모달/상자 */}
+                                    {showGuideModal && (
+                                        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-xs text-emerald-950 space-y-2 leading-relaxed">
+                                            <p className="font-bold text-sm">💡 구글 시트 웹앱 URL 연동 방법 (1분 소요)</p>
+                                            <ol className="list-decimal list-inside space-y-1">
+                                                <li>구글 시트 생성 후 <strong>[확장 프로그램] → [Apps Script]</strong> 클릭</li>
+                                                <li>아래 연동 코드를 복사하여 붙여넣고 저장</li>
+                                                <li><strong>[배포] → [새 배포] → 웹 앱</strong> (액세스 권한: <em>모든 사용자</em>) 선택 후 배포</li>
+                                                <li>생성된 <strong>웹 앱 URL</strong>을 복사하여 아래 URL 입력창에 붙여넣으세요!</li>
+                                            </ol>
+                                            <div className="bg-slate-900 text-emerald-300 font-mono p-2.5 rounded-xl overflow-x-auto text-[11px]">
+                                                {`function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  sheet.appendRow([data.date, data.studentName, data.unitTitle, data.score, data.correctCount, data.totalCount]);
+  return ContentService.createTextOutput("Success");
+}`}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <form onSubmit={handleGoogleSheetSubmit} className="space-y-3.5">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-700 mb-1">학습자 이름 / 성함</label>
+                                            <input 
+                                                type="text"
+                                                value={studentName}
+                                                onChange={(e) => setStudentName(e.target.value)}
+                                                placeholder="예: 홍길동"
+                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-naver focus:ring-1 focus:ring-naver"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-700 mb-1">구글 앱스 스크립트 웹앱 URL (Google Apps Script Web App URL)</label>
+                                            <input 
+                                                type="url"
+                                                value={sheetUrl}
+                                                onChange={(e) => setSheetUrl(e.target.value)}
+                                                placeholder="https://script.google.com/macros/s/.../exec"
+                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-mono focus:outline-none focus:border-naver focus:ring-1 focus:ring-naver"
+                                                required
+                                            />
+                                        </div>
+
+                                        <button 
+                                            type="submit"
+                                            disabled={isSending}
+                                            className={`w-full py-3 rounded-xl font-black text-sm text-white shadow transition flex items-center justify-center space-x-2 ${
+                                                sendSuccess ? 'bg-teal-600' : 'bg-naver hover:bg-naver-hover'
+                                            }`}>
+                                            {isSending ? (
+                                                <span>⏳ 전송 중입니다...</span>
+                                            ) : sendSuccess ? (
+                                                <span>✅ 성공적으로 구글 시트에 전송되었습니다!</span>
+                                            ) : (
+                                                <span>📤 성적 데이터 구글 시트로 제출하기</span>
+                                            )}
+                                        </button>
+                                    </form>
+                                </div>
+
+                                {/* 하단 이동 버튼 */}
+                                <div className="flex justify-center space-x-3 pt-2">
+                                    <button 
+                                        onClick={() => handleStartQuiz(selectedUnitKey, 'practice')}
+                                        className="px-5 py-2.5 bg-naver hover:bg-naver-hover text-white font-bold rounded-xl text-xs sm:text-sm shadow">
+                                        다시 풀기 (연습 모드)
+                                    </button>
+                                    <button 
+                                        onClick={() => setViewMode('home')}
+                                        className="px-5 py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs sm:text-sm shadow">
+                                        단원 홈으로
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* 하단 푸터 */}
+                    <footer className="bg-slate-900 text-slate-400 text-xs py-5 border-t border-slate-800 mt-8">
+                        <div className="max-w-6xl mx-auto px-4 text-center space-y-1">
+                            <p className="font-bold text-slate-300">도란도란 강남한국어 x 서울대 한국어+ 2A</p>
+                            <p className="text-slate-500 text-[11px]">© Doran Doran Gangnam Korean. All rights reserved.</p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
+```eof
+
+### 📋 주요 적용 포인트 정리
+1. **헤더 바로가기 버튼 제거**: Header 우측의 `7과 연습모드` 등의 개별 버튼을 제거하여 깔끔한 브랜드 상단바로 정리하였습니다.
+2. **배너 내 통합 형성평가 버튼 진열**: Green Hero Banner 중앙 상자 안에 **`🚀 통합 형성평가 (1과~9과 전체)`** 연습/모의고사 진입 버튼을 상시 배치하였습니다.
+3. **단원 카드 배지 문구 수정**: 1~9단원 카드의 소형 배지를 **`형성평가 25문제`**로 통일 표기하였습니다.
+4. **구글 시트 성적 제출 탑재**: 시험 제출 후 리포트 화면 하단에 **[학생 이름]** 및 **[구글 스크립트 Web App URL]**을 받아 자신의 구글 드라이브 구글 시트에 자동으로 제출하는 전송 폼과 스크립트 코드를 가이드와 함께 수록했습니다.
